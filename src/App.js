@@ -8,15 +8,15 @@ function App() {
   // Caution: Config section - starts
 
   const baseUrl =
-    "https://g7qqvcisbf.execute-api.ap-southeast-1.amazonaws.com/dev";
+    "https://g7qqvcisbf.execute-api.ap-southeast-1.amazonaws.com/dev/firstname";
 
   const authToken = "Q92egB4D1W9pAj0v0kYbE6Lrp01WWlzFal3y545Y";
 
-  const getUsersListEndpoint = `${baseUrl}/`; // For displaying in the table view
+  const getUsersListEndpoint = `${baseUrl}/getpersons`; // For displaying in the table view
 
-  const addUserEndpoint = `${baseUrl}/`;
+  const addUserEndpoint = `${baseUrl}/addpersons`; // for adding new user
 
-  const deleteUserEndpoint = `${baseUrl}/`;
+  const deleteUserEndpoint = `${baseUrl}/deletepersons`; // for delete an user
 
   const commonHeader = {
     headers: {
@@ -29,9 +29,15 @@ function App() {
   const [users, setusers] = useState([]); //This state will be populated with the Axios HTTP response
 
   const loadusers = useCallback(() => {
-    axios.get(getUsersListEndpoint, commonHeader).then((response) => {
-      setusers(response.data);
-    });
+    axios
+      .get(getUsersListEndpoint, {
+        params: { Key: authToken, tablename: "persondb" },
+        commonHeader,
+      })
+      .then((response) => {
+        console.log("response", response.data);
+        setusers(response.data.Items);
+      });
   }, []);
 
   //The users are loaded initially
@@ -39,26 +45,40 @@ function App() {
     loadusers();
   }, [loadusers]);
 
-  const onCreateNewuser = useCallback(
-    (newuserName) => {
-      axios
-        .post(
-          addUserEndpoint,
-          {
-            name: newuserName,
-          },
-          commonHeader
-        )
-        .then((result) => {
-          //Reload the user to show also the new one
-          loadusers();
-        })
-        .catch((error) => {
-          console.error("create new user error", error);
-        });
-    },
-    [loadusers]
-  );
+  const onCreateNewuser = useCallback(() => {
+    const firstName_element = document.getElementById("firstName");
+    const lastName_element = document.getElementById("lastName");
+    const dob_element = document.getElementById("dob");
+
+    if (
+      !firstName_element.value ||
+      !lastName_element.value ||
+      !dob_element.value
+    ) {
+      alert("All fields are Mandatory!");
+      return false;
+    }
+
+    const dataToPass = {
+      id: Math.ceil(Math.random() * 20).toString(),
+      firstname: firstName_element.value,
+      lastname: lastName_element.value,
+      dob: dob_element.value,
+    };
+
+    axios
+      .post(addUserEndpoint, JSON.stringify(dataToPass), {
+        params: { Key: authToken },
+        commonHeader,
+      })
+      .then((result) => {
+        //Reload the user to show also the new one
+        loadusers();
+      })
+      .catch((error) => {
+        console.error("create new user error", error);
+      });
+  }, [loadusers]);
 
   return (
     <div className="App">
@@ -67,9 +87,9 @@ function App() {
         style={{ marginBottom: "3rem", maxWidth: "70%", marginLeft: "20%" }}
       >
         <Form.Group widths="equal">
-          <Form.Input size="large" placeholder="First Name" />
-          <Form.Input size="large" placeholder="Last Name" />
-          <Form.Input size="large" placeholder="DOB" />
+          <Form.Input size="large" placeholder="First Name" id="firstName" />
+          <Form.Input size="large" placeholder="Last Name" id="lastName" />
+          <Form.Input size="large" placeholder="DOB" id="dob" />
         </Form.Group>
       </Form>
       <Button
@@ -80,6 +100,7 @@ function App() {
           marginBottom: "3rem",
           backgroundColor: "#D5E8D4",
         }}
+        onClick={onCreateNewuser}
       >
         Add
       </Button>
@@ -96,30 +117,24 @@ function App() {
         }}
       >
         <Table.Body>
-          <Table.Row>
-            <Table.Cell collapsing>
-              <Radio toggle />
-            </Table.Cell>
-            <Table.Cell>John Lilki</Table.Cell>
-            <Table.Cell>September 14, 2013</Table.Cell>
-            <Table.Cell>jhlilk22@yahoo.com</Table.Cell>
-          </Table.Row>
-          {/* <Table.Row>
-            <Table.Cell collapsing>
-              <Radio toggle />
-            </Table.Cell>
-            <Table.Cell>Jamie Harington</Table.Cell>
-            <Table.Cell>January 11, 2014</Table.Cell>
-            <Table.Cell>jamieharingonton@yahoo.com</Table.Cell>
-          </Table.Row>
-          <Table.Row>
-            <Table.Cell collapsing>
-              <Radio toggle />
-            </Table.Cell>
-            <Table.Cell>Jill Lewis</Table.Cell>
-            <Table.Cell>May 11, 2014</Table.Cell>
-            <Table.Cell>jilsewris22@yahoo.com</Table.Cell>
-          </Table.Row> */}
+          {users &&
+            users.map((user, key) => {
+              const userId = parseInt(user.id.S);
+              const firstName = user.firstname.S;
+              const lastName = user.lastname.S;
+              const dob = user.dob.S;
+
+              return (
+                <Table.Row key={key}>
+                  <Table.Cell collapsing>
+                    <Radio toggle id={userId} />
+                  </Table.Cell>
+                  <Table.Cell>{firstName}</Table.Cell>
+                  <Table.Cell>{lastName}</Table.Cell>
+                  <Table.Cell>{dob}</Table.Cell>
+                </Table.Row>
+              );
+            })}
         </Table.Body>
       </Table>
 
