@@ -7,22 +7,28 @@ import "./App.css";
 function App() {
   // Caution: Config section - starts
 
-  const baseUrl =
-    "https://g7qqvcisbf.execute-api.ap-southeast-1.amazonaws.com/dev/firstname";
+ const baseUrl = "https://wjndbu9y8h.execute-api.ap-southeast-2.amazonaws.com/dev/personsinfo";
+    
+  const authToken = "8Iw1FSYPpw9EUKxuj7zrdLKKUfpHQp1xC9vvaj70";
 
-  const authToken = "Q92egB4D1W9pAj0v0kYbE6Lrp01WWlzFal3y545Y";
+  const getUsersListEndpoint = `${baseUrl}`; // For displaying in the table view
 
-  const getUsersListEndpoint = `${baseUrl}/getpersons`; // For displaying in the table view
+  const addUserEndpoint = `${baseUrl}`; // for adding new user
 
-  const addUserEndpoint = `${baseUrl}/addpersons`; // for adding new user
-
-  const deleteUserEndpoint = `${baseUrl}/deletepersons`; // for delete an user
+  const deleteUserEndpoint = `${baseUrl}`; // for delete an user
 
   const commonHeader = {
-    headers: {
-      "x-api-key": authToken,
+   headers: {
+    // "x-api-key": "8Iw1FSYPpw9EUKxuj7zrdLKKUfpHQp1xC9vvaj70",
+     // 'Authorization': `Basic ${authToken}`,
     },
-  };
+ };
+
+   axios.defaults.headers.common = {
+   "X-Api-Key": "8Iw1FSYPpw9EUKxuj7zrdLKKUfpHQp1xC9vvaj70",
+   };
+
+ // console.log(axios.defaults.headers.common);
 
   // Config section - ends
 
@@ -31,7 +37,7 @@ function App() {
   const loadusers = useCallback(() => {
     axios
       .get(getUsersListEndpoint, {
-        params: { Key: authToken, tablename: "persondb" },
+        // params: { Key: authToken, tablename: "persondb" },
         commonHeader,
       })
       .then((response) => {
@@ -67,19 +73,21 @@ function App() {
     };
 
     axios
-      .post(addUserEndpoint, JSON.stringify(dataToPass), {
-        params: { Key: authToken },
-        commonHeader,
+      //.post(addUserEndpoint, JSON.stringify(dataToPass), {
+        .post(addUserEndpoint, dataToPass, {
+         // params: { Key: authToken },
+          commonHeader,
       })
       .then((result) => {
         //Reload the user to show also the new one
         loadusers();
+        console.log(dataToPass);
       })
       .catch((error) => {
         console.error("create new user error", error);
       });
   }, [loadusers]);
-
+  
   return (
     <div className="App">
       <Image src={logo} size="small" style={{ display: "block" }} />
@@ -119,10 +127,10 @@ function App() {
         <Table.Body>
           {users &&
             users.map((user, key) => {
-              const userId = parseInt(user.id.S);
-              const firstName = user.firstname.S;
-              const lastName = user.lastname.S;
-              const dob = user.dob.S;
+              const userId = parseInt(user.id);
+              const firstName = user.body.firstname;
+              const lastName = user.body.lastname;
+              const dob = user.body.dob;
 
               return (
                 <Table.Row key={key}>
