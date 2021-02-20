@@ -8,8 +8,6 @@ function App() {
   // Caution: Config section - starts
 
  const baseUrl = "https://wjndbu9y8h.execute-api.ap-southeast-2.amazonaws.com/dev/personsinfo";
-    
-  const authToken = "8Iw1FSYPpw9EUKxuj7zrdLKKUfpHQp1xC9vvaj70";
 
   const getUsersListEndpoint = `${baseUrl}`; // For displaying in the table view
 
@@ -19,13 +17,13 @@ function App() {
 
   const commonHeader = {
    headers: {
-    // "x-api-key": "8Iw1FSYPpw9EUKxuj7zrdLKKUfpHQp1xC9vvaj70",
+    // "x-api-key": "",
      // 'Authorization': `Basic ${authToken}`,
     },
  };
 
    axios.defaults.headers.common = {
-   "X-Api-Key": "8Iw1FSYPpw9EUKxuj7zrdLKKUfpHQp1xC9vvaj70",
+   
    };
 
  // console.log(axios.defaults.headers.common);
